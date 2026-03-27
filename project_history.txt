@@ -1,0 +1,146 @@
+    1  ping 192.168.0.0
+    2  ping 8.8.8.8
+    3  ip link show
+    4  nmcli connection show
+    5  sudo nmcli connection modify "Проводное подключение 2" ipv4.addresses 192.168.1.100/24
+    6  sudo nmcli connection modify "Проводное подключение 2" ipv4.gateway 192.168.1.1
+    7  sudo nmcli connection modify "Проводное подключение 2" ipv4.dns 8.8.8.8
+    8  sudo nmcli connection modify "Проводное подключение 2" ipv4.method manual
+    9  sudo nmcli connection down "Проводное подключение 2"
+   10  sudo nmcli connection up "Проводное подключение 2"
+   11  sudo ip addr add 192.168.1.1/24 dev enp0s9
+   12  ip addr show enp0s9
+   13  sudo nmcli connection modify "Проводное подключение 1" ipv4.method auto
+   14  sudo nmcli connection down "Проводное подключение 1"
+   15  sudo nmcli connection up "Проводное подключение 1"
+   16  ip addr show enp0s8
+   17  sudo hostnamectl set-hostname miphi-2026.domain.local
+   18  hostnamectl
+   19  sudo hostnamectl set-hostname mephi-2026.domain.local
+   20  hostnamectl
+   21  ip route show default
+   22  ping -c 4 8.8.8.8
+   23  ping -c 4 192.168.1.1
+   24  ip route show default > /tmp/network_check.txt
+   25  ping -c 4 8.8.8.8 >> /tmp/network_check.txt
+   26  ping -c 4 192.168.1.1 >> /tmp/network_check.txt
+   27  cat /tmp/network_check.txt
+   28  sudo dnf install nginx tcpdump libcap-ng-utils -y
+   29  rpm -qa | grep -E "nginx|tcpdump|libcap-ng"
+   30  sudo dnf download tcpdump --destdir=/tmp
+   31  ls -la /tmp/tcpdump*.rpm
+   32  sudo rpm -ivh /tmp/tcpdump*.rpm
+   33  rpm -qa | grep tcpdump
+   34  lsblk
+   35  sudo fdisk /dev/sdb
+   36  sudo shutdown -h now
+   37  lsblk
+   38  sudo fdisk /dev/sdb
+   39  sudo mkfs.ext4 -L MEPHI_DATA/dev/sdb1
+   40  lsblk
+   41  sudo mkfs.ext4 -L MEPHI_DATA /dev/sdb1
+   42  sudo mkdir -p /data/mephi-web
+   43  echo "LABEL=MEPHI_DATA /data/mephi-web ext4 defaults 0 2" | sudo tee -a /etc/fstab
+   44  sudo mount -a
+   45  df -h /data/mephi-web
+   46  sudo systemctl start nginx
+   47  sudo systemctl enable nginx
+   48  sudo systemctl status nginx
+   49  sudo journalctl -u nginx --since "5 minutes ago" > /tmp/nginx_recent_logs.txt
+   50  cat /tmp/nginx_recent_logs.txt
+   51  sudo useradd mephi-admin
+   52  echo "P@ssw0rd2026" | sudo passwd --stdin mephi-admin
+   53  sudo groupadd mephi-devs
+   54  sudo usermod -aG mephi-devs mephi-admin
+   55  sudo chown mephi-admin:mephi-devs /data/mephi-web
+   56  sudo chmod 2775 /data/mephi-web
+   57  ls -ld /data/mephi-web
+   58  getenforce
+   59  sudo semanage fcontext -a -t httpd_sys_content_t "/data/mephi-web(/.*)?"
+   60  sudo restorecon -Rv /data/mephi-web
+   61  ls -Z /data/mephi-web
+   62  ls -l /usr/sbin/tcpdump
+   63  sudo setcap cap_net_raw,cap_net_admin+ep /usr/sbin/tcpdump
+   64  getcap /usr/sbin/tcpdump
+   65  sudo -u mephi-admin tcpdump --help
+   66  sudo touch /etc/ssh/denied_users
+   67  echo "root" | sudo tee /etc/ssh/denied_users
+   68  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/system-auth
+   69  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/sshd
+   70  cat /etc/ssh/denied_users
+   71  sudo systemctl restart sshd
+   72  sudo systemctl status sshd
+   73  sudo su - root
+   74  ls /etc/pam.d/ | grep -E "su|system-auth|login"
+   75  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/login
+   76  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/su
+   77  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/su-l
+   78  sudo su - root
+   79  sudo su root
+   80  grep pam_listfile /etc/pam.d/login
+   81  grep pam_listfile /etc/pam.d/su
+   82  grep pam_listfile /etc/pam.d/su-l
+   83  grep pam_listfile /etc/pam.d/system-auth
+   84  grep pam_listfile /etc/pam.d/sshd
+   85  echo "auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed" | sudo tee -a /etc/pam.d/sudo
+   86  sudo su root
+   87  ssh root@localhost
+   88  sudo sed -i '/pam_listfile/d' /etc/pam.d/system-auth
+   89  sudo sed -i '/pam_listfile/d' /etc/pam.d/sshd
+   90  sudo sed -i '/pam_listfile/d' /etc/pam.d/login
+   91  sudo sed -i '/pam_listfile/d' /etc/pam.d/su
+   92  sudo sed -i '/pam_listfile/d' /etc/pam.d/su-l
+   93  sudo sed -i '/pam_listfile/d' /etc/pam.d/sudo
+   94  PAM_LINE="auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed"
+   95  echo "$PAM_LINE" | sudo cat - /etc/pam.d/system-auth > /tmp/system-auth.new
+   96  sudo mv /tmp/system-auth.new /etc/pam.d/system-auth
+   97  echo "$PAM_LINE" | sudo cat - /etc/pam.d/sshd > /tmp/sshd.new
+   98  sudo mv /tmp/sshd.new /etc/pam.d/sshd
+   99  echo "$PAM_LINE" | sudo cat - /etc/pam.d/login > /tmp/login.new
+  100  sudo mv /tmp/login.new /etc/pam.d/login
+  101  echo "$PAM_LINE" | sudo cat - /etc/pam.d/su > /tmp/su.new
+  102  sudo mv /tmp/su.new /etc/pam.d/su
+  103  echo "$PAM_LINE" | sudo cat - /etc/pam.d/su-l > /tmp/su-l.new
+  104  sudo mv /tmp/su-l.new /etc/pam.d/su-l
+  105  echo "$PAM_LINE" | sudo cat - /etc/pam.d/sudo > /tmp/sudo.new
+  106  sudo mv /tmp/sudo.new /etc/pam.d/sudo
+  107  sudo systemctl restart sshd
+  108  head -3 /etc/pam.d/system-auth
+  109  sudo authselect select custom/mephi-auth --force
+  110  grep pam_listfile /etc/pam.d/sshd
+  111  cat /etc/pam.d/sshd
+  112  sudo sed -i '/pam_listfile/d' /etc/pam.d/sshd
+  113  sudo sed -i '/#%PAM-1.0/a auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed' /etc/pam.d/sshd
+  114  cat /etc/pam.d/sshd
+  115  sudo systemctl restart sshd
+  116  cat /etc/pam.d/system-auth
+  117  sudo sed -i '/pam_listfile/d' /etc/pam.d/login
+  118  sudo sed -i '/#%PAM-1.0/a auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed' /etc/pam.d/login
+  119  cat /etc/pam.d/login
+  120  sudo sed -i '/pam_listfile/d' /etc/pam.d/su
+  121  sudo sed -i '/#%PAM-1.0/a auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed' /etc/pam.d/su
+  122  cat /etc/pam.d/su
+  123  sudo sed -i '/pam_listfile/d' /etc/pam.d/su-l
+  124  sudo sed -i '/#%PAM-1.0/a auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed' /etc/pam.d/su-l
+  125  cat /etc/pam.d/su-l
+  126  sudo sed -i '/pam_listfile/d' /etc/pam.d/sudo
+  127  sudo sed -i '/#%PAM-1.0/a auth required pam_listfile.so item=user sense=deny file=/etc/ssh/denied_users onerr=succeed' /etc/pam.d/sudo
+  128  cat /etc/pam.d/sudo
+  129  sudo su root
+  130  su - mephi-admin
+  131  curl http://localhost
+  132  sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.bak
+  133  sudo sed -i 's|root /usr/share/nginx/html;|root /data/mephi-web;|' /etc/nginx/nginx.conf
+  134  sudo nginx -t && sudo systemctl restart nginx
+  135  curl http://localhost
+  136  cat /data/mephi-web/index.html
+  137  grep -n "root" /etc/nginx/nginx.conf
+  138  sudo systemctl reload nginx
+  139  curl http://localhost
+  140  sudo sed -i '41s|root /usr/share/nginx/html;|root /data/mephi-web;|' /etc/nginx/nginx.conf
+  141  sed -n '41p' /etc/nginx/nginx.conf
+  142  sudo nano /etc/nginx/nginx.conf
+  143  sudo systemctl restart nginx
+  144  curl http://localhost
+  145  curl http://192.168.1.100
+  146  history > ~/project_history.txt
